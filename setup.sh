@@ -14,4 +14,4 @@ kubectl apply -f kubernetes/alb-ingress-controller.yaml
 kubectl apply -f kubernetes/orders.yaml
 
 #  Deploy catalog service
-ubectl apply -f kubernetes/catalog.yaml
+kubectl apply -f kubernetes/catalog.yaml
