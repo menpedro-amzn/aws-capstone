@@ -1,0 +1,53 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: catalog
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+  selector:
+    app: catalog
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: catalog-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/healthcheck-path: /catalog
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /catalog/*
+        backend:
+          serviceName: catalog
+          servicePort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog
+spec:
+  selector:
+    matchLabels:
+      app: catalog
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: catalog
+    spec:
+      containers:
+      - name: catalog
+        image: rliwoch/catalog
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 0.25
+            memory: 512

@@ -1,0 +1,54 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: orders
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+  selector:
+    app: orders
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: orders-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/healthcheck-path: /orders/last
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /orders/*
+        backend:
+          serviceName: orders
+          servicePort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+spec:
+  selector:
+    matchLabels:
+      app: orders
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: orders
+        node-type: fargate
+    spec:
+      containers:
+      - name: orders
+        image: rliwoch/orders
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 0.25
+            memory: 512
